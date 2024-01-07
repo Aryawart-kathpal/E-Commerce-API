@@ -3,7 +3,7 @@ const User =require('../models/User');
 const {StatusCodes} = require('http-status-codes');
 const CustomError = require('../errors');
 const jwt = require('jsonwebtoken');
-const {attachCookiesToResponse} = require('../utils');
+const {attachCookiesToResponse,createTokenUser} = require('../utils');
 
 const register = async(req,res)=>{
     //This may not have to be done, as it is already being handled in the schema, unique:true
@@ -20,9 +20,7 @@ const register = async(req,res)=>{
 
     const user = await User.create({email,name,password,role});
 
-    const tokenUser ={
-        name:user.name,userId:user._id,role:user.role
-    }
+    const tokenUser =createTokenUser(user);
     // const token = jwt.sign(tokenUser,process.env.JWT_SECRET,{expiresIn:process.env.JWT_LIFETIME}); // this step has now been done in the createJWT() in the utils folder
     // const token =createJWT({payload : tokenUser});
 
@@ -52,15 +50,12 @@ const login = async(req,res)=>{
         throw new CustomError.UnauthenticatedError(`No user exists with email ${email}`);
     }
 
-    const isPasswordCorrect = user.comparePassword(password);
+    const isPasswordCorrect = await user.comparePassword(password);// await is must here
     if(!isPasswordCorrect){
         throw new CustomError.UnauthenticatedError("Incorrect password entered");
     }
 
-    const tokenUser ={
-        name:user.name,userId:user._id,role:user.role
-    }
-
+    const tokenUser =createTokenUser(user);
     attachCookiesToResponse({res,user:tokenUser});
 
     res.status(StatusCodes.OK).json({user : tokenUser});

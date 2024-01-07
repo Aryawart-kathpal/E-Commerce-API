@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     }
 })
 
+// this.modifiedPaths() is an array of all the paths that have been modified
 userSchema.pre('save',async function(){
     const salt = await bcrypt.genSalt(10);
     if(!this.isModified('password')) return;// to avoid rehashing of the password 

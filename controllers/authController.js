@@ -26,7 +26,7 @@ const register = async(req,res)=>{
     // const token = jwt.sign(tokenUser,process.env.JWT_SECRET,{expiresIn:process.env.JWT_LIFETIME}); // this step has now been done in the createJWT() in the utils folder
     // const token =createJWT({payload : tokenUser});
 
-    // const oneDay = 1000*60*60*24;// millisecond in one day, so here what I mean, si that I want my cookei to be alive only for one day
+    // const oneDay = 1000*60*60*24;// millisecond in one day, so here what I mean, is that I want my cookie to be alive only for one day
 
     // //res.cookie(name,value,options)
     // res.cookie('token',token,{
@@ -42,11 +42,37 @@ const register = async(req,res)=>{
 }
 
 const login = async(req,res)=>{
-    res.send("login");
+    const {email,password}=req.body;
+    if(!email || !password){
+        throw new CustomError.BadRequestError("Please provide email and password");
+    }
+    const user = await User.findOne({email});
+
+    if(!user){
+        throw new CustomError.UnauthenticatedError(`No user exists with email ${email}`);
+    }
+
+    const isPasswordCorrect = user.comparePassword(password);
+    if(!isPasswordCorrect){
+        throw new CustomError.UnauthenticatedError("Incorrect password entered");
+    }
+
+    const tokenUser ={
+        name:user.name,userId:user._id,role:user.role
+    }
+
+    attachCookiesToResponse({res,user:tokenUser});
+
+    res.status(StatusCodes.OK).json({user : tokenUser});
 }
 
+// we expire the cookie and in console, we find that req.signedCookies has empty object with no token 
 const logout = async(req,res)=>{
-    res.send("logout");
+    res.cookie('token','logout',{
+        httpOnly:true,
+        expires : new Date(Date.now()/*+5*1000*/),
+    })
+    res.status(StatusCodes.OK).json({msg:"user logged out"});
 }
 
 module.exports={register,login,logout};

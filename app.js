@@ -7,6 +7,7 @@ const app =express();
 
 //all other packages
 const morgan = require('morgan');
+const fileUpload= require('express-fileupload');
 
 // database
 const connectDB = require('./db/connect');
@@ -14,6 +15,7 @@ const connectDB = require('./db/connect');
 // routes
 const authRouter = require('./routes/authRoutes');
 const userRouter = require('./routes/userRoutes');
+const productRouter = require('./routes/productRoutes');
 
 // impoort middleware
 const cookieParser = require('cookie-parser');
@@ -24,6 +26,9 @@ const errorHandlerMiddleware = require('./middleware/error-handler');
 app.use(cookieParser(process.env.JWT_SECRET));// using the cookieParser middleware we can now access the req.cookies, which contains the token in it, so that we now not have to take the token from frontend everytime
 app.use(express.json());
 app.use(morgan('tiny'));
+
+app.use(express.static('./public'));
+app.use(fileUpload());
 
 //routes
 app.get('/',(req,res)=>{
@@ -39,6 +44,8 @@ app.get('/api/v1',(req,res)=>{
 
 app.use('/api/v1/auth',authRouter);
 app.use('/api/v1/users',userRouter);
+
+app.use('/api/v1/products',productRouter);
 
 app.use(notFoundMiddleware);// in the notFoundMiddleware we are not calling next() so the call gets ended here only
 app.use(errorHandlerMiddleware);// this is only thrown in the errors from the already existing routes, it can't be invoked from the routes that doesn't even exist

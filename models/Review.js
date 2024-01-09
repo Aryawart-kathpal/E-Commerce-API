@@ -36,15 +36,38 @@ reviewSchema.index({product:1,user:1},{unique:true});
 
 //static methods are used to make a call inside this file only
 reviewSchema.statics.calculateAverageRating = async function (productId){
-    console.log(productId);
+    const result = await this.aggregate([
+        {$match : {product:productId}},
+        {
+            $group : {
+                _id:null,// if we want to do for specific product then '$product' , null means for all products
+                averageRating : {$avg : '$rating'},
+                numOfReviews : {$sum : 1},
+            },
+        },
+    ])
+    console.log(result);
+
+    try {
+        await this.model('Product').findOneAndUpdate(
+            {_id:productId},
+            {
+                averageRating: Math.ceil(result[0]?.averageRating || 0),
+                numOfReviews : result[0]?.numOfReviews || 0,
+            }
+        )
+    } catch (error) {
+        console.log(error);
+    }
+
 }
 
-reviewSchema.pre('save',async function(){
+reviewSchema.post('save',async function(){
     // console.log('Pre save hook called');
     await this.constructor.calculateAverageRating(this.product);
 });
 
-reviewSchema.pre('remove',async function(){
+reviewSchema.post('remove',async function(){
     // console.log('Pre remove hook called');
     await this.constructor.calculateAverageRating(this.product);
 });

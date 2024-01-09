@@ -10,11 +10,12 @@ const createProduct = async(req,res)=>{
 }
 
 const getAllProducts = async(req,res)=>{
-    const products = await Product.find({});
+    const products = await Product.find({}).populate('reviews');
 
     res.status(StatusCodes.OK).json({products,count:products.length});
 }
 
+// we might need to populate the reviews that are associated with the product, but as in the productSchema, there is no ref: to 'reviews' so we have to use mongoose virtuals for that
 const getSingleProduct = async(req,res)=>{
     const {id:productId} = req.params;
     const product = await Product.findOne({_id:productId});
@@ -47,7 +48,7 @@ const deleteProduct = async(req,res)=>{
         throw new CustomError.notFoundError(`No product found with id ${productId}`);
     }
 
-    await product.remove();// the reason of setting up the functionallity like this later
+    await product.remove();// we swtup this functionality beacause when we try to remove the product we also want that the corresponding reviews to be removed too, so we make a pre hook that is triggered at the time of this step that removes the reviews related to this
     res.status(StatusCodes.OK).json({msg:"Successfully deleted the product"});
 }
 

@@ -56,11 +56,29 @@ const productSchema = mongoose.Schema({
     type:Number,
     deafult:0,
   },
+  numOfReviews :{
+    type:Number,
+    default:0,
+  },
   user:{
     type: mongoose.Types.ObjectId,
     ref:'User',
     required:true,
   }
-},{timestamps:true});
+},{timestamps:true, toJSON :{virtuals :true},toObject : {virtuals:true}});
+
+// to link the reviews with the product we will have to use mongoose virtuals
+productSchema.virtual('reviews',{
+  ref:'Review',
+  localField:'_id',
+  foreignField : 'product',
+  justOne:false,
+  // match :{rating:5},->only fetch those with rating 5
+});
+// the above method has a disadvantage that we can't perform queries on the reviews like findOne,etc.
+
+productSchema.pre('remove',async function(next){
+  await this.model('Review').deleteMany({product:this._id});
+})
 
 module.exports = mongoose.model('Product',productSchema);

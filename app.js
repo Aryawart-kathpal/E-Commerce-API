@@ -17,6 +17,7 @@ const authRouter = require('./routes/authRoutes');
 const userRouter = require('./routes/userRoutes');
 const productRouter = require('./routes/productRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const orderRouter = require('./routes/orderRoutes');
 
 // impoort middleware
 const cookieParser = require('cookie-parser');
@@ -48,6 +49,7 @@ app.use('/api/v1/users',userRouter);
 
 app.use('/api/v1/products',productRouter);
 app.use('/api/v1/reviews',reviewRouter);
+app.use('/api/v1/orders',orderRouter);
 
 app.use(notFoundMiddleware);// in the notFoundMiddleware we are not calling next() so the call gets ended here only
 app.use(errorHandlerMiddleware);// this is only thrown in the errors from the already existing routes, it can't be invoked from the routes that doesn't even exist

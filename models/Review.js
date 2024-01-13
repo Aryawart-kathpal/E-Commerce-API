@@ -15,7 +15,7 @@ const reviewSchema = mongoose.Schema({
     },
     comment:{
         type:String,
-        required:['Please provide review text'],
+        required:[true,'Please provide review text'],
     },
     user:{
         type:mongoose.Schema.ObjectId,//== mongoose.Types.ObjectId
@@ -31,7 +31,7 @@ const reviewSchema = mongoose.Schema({
 
 // We want that a user gives only 1 review for a product but if we do unique:true for both user and product it is not going to work
 // we call this property as index -> for ex. setting unique:true is also setting index
-// Here we would want to set a compund index, i.e. which contains multiple fields
+// Here we would want to set a compound index, i.e. which contains multiple fields
 reviewSchema.index({product:1,user:1},{unique:true});
 
 //static methods are used to make a call inside this file only

@@ -4,13 +4,13 @@ const CustomError = require('../errors');
 const path = require('path');
  
 const createProduct = async(req,res)=>{
-    req.body.user= req.user.userId;
+    req.body.user= req.user.userId;// req.body mein user ki id bharna
     const product = await Product.create(req.body);
     res.status(StatusCodes.CREATED).json({product});
 }
 
 const getAllProducts = async(req,res)=>{
-    const products = await Product.find({}).populate('reviews');
+    const products = await Product.find({}).populate('reviews');// using the mongo virtuals, we populate and send all the reviews corresponding to that product
 
     res.status(StatusCodes.OK).json({products,count:products.length});
 }
@@ -48,7 +48,7 @@ const deleteProduct = async(req,res)=>{
         throw new CustomError.notFoundError(`No product found with id ${productId}`);
     }
 
-    await product.remove();// we swtup this functionality beacause when we try to remove the product we also want that the corresponding reviews to be removed too, so we make a pre hook that is triggered at the time of this step that removes the reviews related to this
+    await product.remove();// we setup this functionality beacause when we try to remove the product we also want that the corresponding reviews to be removed too, so we make a pre hook that is triggered at the time of this step that removes the reviews related to this
     res.status(StatusCodes.OK).json({msg:"Successfully deleted the product"});
 }
 
@@ -68,9 +68,9 @@ const uploadImage = async(req,res)=>{
         throw new CustomError.BadRequestError('Please upload image less than 1 MB');
     }
 
-    const imagePath = path.resolve(__dirname,'../public/uploads/'+`${productImage.name}`);
+    const imagePath = path.join(__dirname,'../public/uploads/'+`${productImage.name}`);
     await productImage.mv(imagePath);
-
+    
     res.status(StatusCodes.OK).json({image:`uploads/${productImage.name}`});
 }
 
